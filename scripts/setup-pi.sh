@@ -3,6 +3,8 @@
 sudo apt upgrade
 sudo apt update
 
+sudo apt install -y vim
+
 # Install latest version of nodejs
 curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
 sudo apt install -y nodejs
@@ -12,5 +14,6 @@ curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /us
 echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 sudo apt-get update && sudo apt-get install yarn
 
-sudo npm i -g @nestjs/cli
-sudo npm install pm2@latest -g
+
+yarn global add @nestjs/cli pm2
+export PATH="$(yarn global bin):$PATH"
