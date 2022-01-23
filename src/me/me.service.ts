@@ -3,18 +3,25 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { AppService } from "src/app.service";
 import { AppServiceDocument } from "src/schemas/AppService";
+import { Creation, CreationDocument } from "src/schemas/Creation.schema";
 import SpotifyService from "src/services/spotify.service";
-
-
 
 @Injectable()
 export class MeService {
-
 	constructor(
 		private spotifyService: SpotifyService,
-		@InjectModel(AppService.name) private appServiceDb: Model<AppServiceDocument>
-	) {
+		@InjectModel(AppService.name) private appServiceDb: Model<AppServiceDocument>,
+		@InjectModel(Creation.name) private creationModel: Model<CreationDocument>,
+	) { }
 
+
+	async creations() {
+		return this.creationModel.find();
+	}
+
+	async addCreation(creation: Creation) {
+		const doc = new this.creationModel(creation);
+		await doc.save();
 	}
 
 
@@ -38,8 +45,6 @@ export class MeService {
 		});
 
 		const currentSong = await this.spotifyService.getCurrentSong();
-
-		console.log(currentSong);
 
 		return currentSong;
 	}
