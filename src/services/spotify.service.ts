@@ -53,7 +53,7 @@ export default class SpotifyService {
 		this.api = new SpotifyWebApi({
 			clientId,
 			clientSecret,
-			redirectUri: 'http://www.example.com/callback'
+			redirectUri: 'http://localhost:6006/me/spotify-callback',
 		});
 	}
 
@@ -61,6 +61,35 @@ export default class SpotifyService {
 	public async auth(tokens: IAccessTokens) {
 		this.api.setAccessToken(tokens.accessToken);
 		this.api.setRefreshToken(tokens.refreshToken);
+	}
+
+	public getAuthUrl() {
+		const permissions = [
+			"user-read-private",
+			"user-read-email",
+			"streaming",
+			"user-read-birthdate",
+			"user-read-playback-state",
+			"user-read-recently-played",
+			"user-modify-playback-state",
+			"playlist-modify-private",
+			"playlist-read-private",
+			"playlist-modify-public",
+			"playlist-read-collaborative",
+			"user-library-read",
+		];
+		const authUrl = this.api.createAuthorizeURL(permissions, "tyler_state");
+		return authUrl;
+	}
+
+	public async authorizeCode(code: string) {
+		const data = await this.api.authorizationCodeGrant(code)
+		const tokens = {
+			accessToken: data.body.access_token,
+			refreshToken: data.body.refresh_token,
+		}
+		this.auth(tokens)
+		return tokens;
 	}
 
 
@@ -100,11 +129,11 @@ export default class SpotifyService {
 
 		const data = await makeCall();
 
-		if (data.statusCode == 200 || data.statusCode === 201) {
+		if (data.statusCode == 200 || data.statusCode === 201 || data.statusCode === 204) {
 			return data.body;
 		}
 
-		throw new Error("Could not make spotify call");
+		throw new Error(`Could not make spotify call ${JSON.stringify(data)}`);
 	}
 
 
@@ -140,6 +169,7 @@ export default class SpotifyService {
 		}
 
 		const currentSong = await this.call(api => api.getMyCurrentPlaybackState());
+
 
 		if (!currentSong.item || currentSong.item.type === "episode") {
 			const pastSongs = await this.call(api => api.getMyRecentlyPlayedTracks());

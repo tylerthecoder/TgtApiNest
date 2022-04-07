@@ -43,6 +43,15 @@ export class MeService {
 		});
 	}
 
+	public async authorizeSpotifyCode(code: string) {
+		const tokens = await this.spotifyService.authorizeCode(code);
+		await this.appServiceDb.updateOne({ name: "spotify" }, {
+			"access_token": tokens.accessToken,
+			"refresh_token": tokens.refreshToken,
+		});
+		console.log("Spotify code updated!")
+	}
+
 
 	async listeningTo() {
 		await this.authSpotify();
