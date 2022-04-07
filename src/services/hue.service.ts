@@ -11,7 +11,6 @@ export class HueService {
 		private configService: ConfigService,
 	) {
 		this.hueUrl = this.configService.get("HUE_URL");
-		this.getLight(1);
 	}
 
 	private async get<T>(url: string): Promise<T> {
@@ -23,7 +22,11 @@ export class HueService {
 	}
 
 	public async getLight(lightNum: number) {
-		const light = await this.get(`/lights/${lightNum}`);
+		return this.get(`/lights/${lightNum}`);
+	}
+
+	public async getLights() {
+		return this.get("/lights");
 	}
 
 }

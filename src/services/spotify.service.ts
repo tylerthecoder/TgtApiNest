@@ -30,6 +30,11 @@ interface Response<T> {
 	statusCode: number;
 }
 
+interface IAccessTokens {
+	accessToken: string;
+	refreshToken: string;
+}
+
 @Injectable()
 export default class SpotifyService {
 
@@ -53,18 +58,55 @@ export default class SpotifyService {
 	}
 
 
-	public async auth(tokens: { accessToken: string, refreshToken: string }) {
+	public async auth(tokens: IAccessTokens) {
 		this.api.setAccessToken(tokens.accessToken);
 		this.api.setRefreshToken(tokens.refreshToken);
 	}
 
-	private async call<T>(call: (api: SpotifyWebApi) => Promise<Response<T>>): Promise<T> {
-		const data = await call(this.api);
-		if (data.statusCode == 200) {
+
+	private onTokenRefresh: ((token: IAccessTokens) => Promise<void>) | null = null;
+	public async setOnTokenRefresh(onTokenRefresh: (token: IAccessTokens) => Promise<void>) {
+		this.onTokenRefresh = onTokenRefresh;
+	}
+
+	public async refreshToken() {
+		const tokens = await this.call(api => api.refreshAccessToken());
+		this.api.setAccessToken(tokens.access_token);
+		if (tokens.refresh_token) {
+			this.api.setRefreshToken(tokens.refresh_token);
+
+			console.log(this.onTokenRefresh);
+
+			this.onTokenRefresh?.({
+				accessToken: tokens.access_token,
+				refreshToken: tokens.refresh_token,
+			});
+		}
+	}
+
+	public async call<T>(call: (api: SpotifyWebApi) => Promise<Response<T>>): Promise<T> {
+		const makeCall = async () => {
+			try {
+				const data = await call(this.api);
+				return data;
+			} catch (e: any) {
+				if (e.message.includes("access token")) {
+					await this.refreshToken();
+					return call(this.api);
+				}
+				throw e;
+			}
+		}
+
+		const data = await makeCall();
+
+		if (data.statusCode == 200 || data.statusCode === 201) {
 			return data.body;
 		}
+
 		throw new Error("Could not make spotify call");
 	}
+
 
 	private currentSongCache = new Cache<ICurrentlyPlayingSong>(10000);
 	public async getCurrentSong(): Promise<ICurrentlyPlayingSong> {

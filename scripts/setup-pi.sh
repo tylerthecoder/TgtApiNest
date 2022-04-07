@@ -16,4 +16,16 @@ sudo apt-get update && sudo apt-get install yarn
 
 
 yarn global add @nestjs/cli pm2
-export PATH="$(yarn global bin):$PATH"
+echo "PATH=$PATH:$(yarn global bin)" >> ~/.bashrc
+
+# Setup SSL
+sudo apt install -y snapd
+sudo snap install core; sudo snap refresh core
+
+
+
+
+sudo groupadd ssl-cert
+sudo chgrp -R ssl-cert /etc/letsencrypt
+sudo chmod -R g=rX /etc/letsencrypt
+

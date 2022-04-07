@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MeModule } from './me/me.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { HueService } from './services/hue.service';
+import { VibageModule } from './vibage/vibage.module';
 
 @Module({
   imports: [
@@ -17,8 +18,9 @@ import { HueService } from './services/hue.service';
       }),
     }),
     MeModule,
+    VibageModule,
   ],
   controllers: [AppController],
-  providers: [AppService, HueService],
+  providers: [ConfigService, AppService, HueService],
 })
 export class AppModule { }

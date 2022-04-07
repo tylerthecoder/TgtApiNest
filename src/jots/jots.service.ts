@@ -41,8 +41,11 @@ export class JotService {
 		return jot;
 	}
 
-	async editJot(jotId: string, textDiff: Change[]): Promise<void> {
+	async getBookJots() {
+		return this.jotModel.find({ "tags.text": { $in: ["book"] } });
+	}
 
+	async editJot(jotId: string, textDiff: Change[]): Promise<void> {
 		const currentText = textDiff
 			.filter(diff => diff.value && !diff.removed)
 			.reduce((text, diff) => text + diff.value, "");

@@ -14,7 +14,6 @@ export class MeService {
 		@InjectModel(Creation.name) private creationModel: Model<CreationDocument>,
 	) { }
 
-
 	async creations() {
 		return this.creationModel.find();
 	}
@@ -24,8 +23,7 @@ export class MeService {
 		await doc.save();
 	}
 
-
-	async listeningTo() {
+	private async authSpotify() {
 		const spotify = await this.appServiceDb.findOne({ name: "spotify" });
 
 		if (!spotify) {
@@ -43,12 +41,19 @@ export class MeService {
 			accessToken: tokens.body.access_token,
 			refreshToken: tokens.body.refresh_token!,
 		});
-
-		const currentSong = await this.spotifyService.getCurrentSong();
-
-		return currentSong;
 	}
 
+
+	async listeningTo() {
+		await this.authSpotify();
+		return this.spotifyService.getCurrentSong();
+	}
+
+	async getDevices() {
+		await this.authSpotify();
+		const devices = await this.spotifyService.api.getMyDevices()
+		console.log(devices.body.devices);
+	}
 
 
 }
