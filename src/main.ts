@@ -4,10 +4,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { readFileSync } from 'fs';
 import { AppModule } from './app.module';
 import { NestApplicationOptions } from '@nestjs/common';
+import { app, setApp } from './app';
 
 
 async function bootstrap() {
-
   const options: NestApplicationOptions = {}
 
   if (process.env.HTTPS_ENABLED) {
@@ -25,16 +25,15 @@ async function bootstrap() {
     }
   }
 
-  console.log("Hello")
-
-  const app = await NestFactory.create(AppModule, options);
+  setApp(await NestFactory.create(AppModule, options));
   app.enableCors();
-
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Tgt API')
     .setDescription('my api')
     .build()
+
+
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 

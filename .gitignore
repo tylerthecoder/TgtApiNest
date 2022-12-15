@@ -1,4 +1,5 @@
 .env
+.env.pi
 
 # compiled output
 /dist
